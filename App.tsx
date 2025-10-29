@@ -68,7 +68,7 @@ const App: React.FC = () => {
       setAnalysisResult(result);
       setActiveStratum(summaryOverride ? 3 : 0);
     } catch (e) {
-      setError("An error occurred during analysis. Please check your API key and try again.");
+      setError("server has too much load, try again in a while");
       setActiveStratum(1);
       console.error(e);
     } finally {

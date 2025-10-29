@@ -15,13 +15,9 @@ export const SAMPLE_MODALITIES: Required<MultiModalData> = {
     image: SAMPLE_EKG_BASE64,
     findings: "Normal sinus rhythm at 78 bpm. No acute ST-segment elevation or depression. No significant arrhythmias.",
   },
+  // FIX: Updated labResults to conform to the { fileName: string; findings: string } type.
   labResults: {
-    panel: "Complete Blood Count (CBC)",
-    results: [
-      { test: "WBC", value: "15.2 x10^9/L", range: "4.0-11.0" },
-      { test: "Neutrophils", value: "85%", range: "40-75" },
-      { test: "Hemoglobin", value: "14.1 g/dL", range: "13.5-17.5" },
-      { test: "Platelets", value: "250 x10^9/L", range: "150-450" },
-    ],
+    fileName: "sample_cbc_results.txt",
+    findings: "Complete Blood Count (CBC)\n- WBC: 15.2 x10^9/L (High, Range: 4.0-11.0)\n- Neutrophils: 85% (High, Range: 40-75)\n- Hemoglobin: 14.1 g/dL (Normal, Range: 13.5-17.5)\n- Platelets: 250 x10^9/L (Normal, Range: 150-450)",
   },
 };

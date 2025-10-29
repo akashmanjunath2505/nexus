@@ -19,8 +19,9 @@ export interface BiometricStream {
 export interface MultiModalData {
   chestXray?: { image: string; findings: string };
   ekg?: { image: string; findings: string };
-  labResults?: { panel: string; results: { test: string; value: string; range: string }[] };
+  labResults?: { fileName: string; findings: string };
 }
+
 
 export interface ClinicalCase {
   summary: string;

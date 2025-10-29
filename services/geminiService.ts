@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { NexusAnalysis, MultiModalData } from '../types';
 import { NEXUS_EXAMPLE } from '../data/promptExamples';
@@ -409,19 +410,16 @@ const buildMultiModalPrompt = (multiModalData: MultiModalData): string => {
     let prompt = "\n\n**ADDITIONAL MULTI-MODAL DATA (GROUND YOUR REASONING IN THIS DATA):**\n";
     let hasData = false;
 
-    if (multiModalData.chestXray) {
+    if (multiModalData.chestXray?.findings) {
         prompt += `\n**Chest X-Ray Findings:** ${multiModalData.chestXray.findings}\n`;
         hasData = true;
     }
-    if (multiModalData.ekg) {
+    if (multiModalData.ekg?.findings) {
         prompt += `\n**EKG Findings:** ${multiModalData.ekg.findings}\n`;
         hasData = true;
     }
-    if (multiModalData.labResults) {
-        prompt += `\n**Lab Results (${multiModalData.labResults.panel}):**\n`;
-        multiModalData.labResults.results.forEach(r => {
-            prompt += `- ${r.test}: ${r.value} (Ref: ${r.range})\n`;
-        });
+    if (multiModalData.labResults?.findings) {
+        prompt += `\n**Lab Results (${multiModalData.labResults.fileName}):**\n${multiModalData.labResults.findings}\n`;
         hasData = true;
     }
 

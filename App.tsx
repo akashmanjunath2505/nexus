@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { runNexusAnalysis } from './services/geminiService';
-import { SAMPLE_MODALITIES } from './data/assetData';
 import type { NexusAnalysis, MultiModalData } from './types';
 import { Loader } from './components/ui/Loader';
 import { Card } from './components/ui/Card';
@@ -24,6 +23,8 @@ const NAV_ITEMS = [
     ...STRATA.map(s => ({...s, id: s.id + 1})), // Shift strata IDs to make space
 ];
 
+type Modality = 'chestXray' | 'ekg' | 'labResults';
+
 const App: React.FC = () => {
   const [activeStratum, setActiveStratum] = useState<number>(1);
   const [analysisResult, setAnalysisResult] = useState<NexusAnalysis | null>(null);
@@ -39,16 +40,51 @@ const App: React.FC = () => {
     setShowMain(true);
   }, []);
 
-  const handleToggleModality = <K extends keyof MultiModalData>(modality: K) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, modality: Modality) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (modality === 'labResults') {
+        setMultiModalData(prev => ({
+            ...prev,
+            labResults: { fileName: file.name, findings: '' }
+        }));
+    } else { // image modalities
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setMultiModalData(prev => ({
+                ...prev,
+                [modality]: { image: reader.result as string, findings: '' }
+            }));
+        };
+        reader.readAsDataURL(file);
+    }
+    // Reset file input value to allow re-uploading the same file
+    event.target.value = '';
+  };
+
+  const handleFindingsChange = (modality: Modality, findings: string) => {
     setMultiModalData(prev => {
-        const newState = {...prev};
-        if (newState[modality]) {
-            delete newState[modality];
-        } else {
-            newState[modality] = SAMPLE_MODALITIES[modality];
+        const currentModalityData = prev[modality];
+        if (!currentModalityData) return prev;
+        
+        let updatedModality;
+        if ('fileName' in currentModalityData) { // LabResults type guard
+            updatedModality = { ...currentModalityData, findings };
+        } else { // Image type guard
+            updatedModality = { ...currentModalityData, findings };
         }
-        return newState;
+
+        return { ...prev, [modality]: updatedModality };
     });
+  };
+
+  const handleRemoveModality = (modality: Modality) => {
+      setMultiModalData(prev => {
+          const newState = { ...prev };
+          delete newState[modality];
+          return newState;
+      });
   };
 
   const handleAnalysis = useCallback(async (summaryOverride?: string) => {
@@ -123,15 +159,39 @@ const App: React.FC = () => {
                  <div className="mt-6">
                     <Card title="Add Multi-Modal Data" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button onClick={() => handleToggleModality('chestXray')} className={`p-2 border-2 rounded-lg transition-colors ${multiModalData.chestXray ? 'border-cyan-500 bg-cyan-900/30' : 'border-slate-700 hover:border-cyan-700'}`}>Add Sample Chest X-Ray</button>
-                            <button onClick={() => handleToggleModality('ekg')} className={`p-2 border-2 rounded-lg transition-colors ${multiModalData.ekg ? 'border-cyan-500 bg-cyan-900/30' : 'border-slate-700 hover:border-cyan-700'}`}>Add Sample EKG</button>
-                            <button onClick={() => handleToggleModality('labResults')} className={`p-2 border-2 rounded-lg transition-colors ${multiModalData.labResults ? 'border-cyan-500 bg-cyan-900/30' : 'border-slate-700 hover:border-cyan-700'}`}>Add Sample Lab Results</button>
+                            {!multiModalData.chestXray && <label className="flex items-center justify-center p-2 h-10 border-2 border-slate-700 rounded-lg transition-colors hover:border-cyan-700 cursor-pointer text-sm font-medium"><input type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'chestXray')} />Add Chest X-Ray</label>}
+                            {!multiModalData.ekg && <label className="flex items-center justify-center p-2 h-10 border-2 border-slate-700 rounded-lg transition-colors hover:border-cyan-700 cursor-pointer text-sm font-medium"><input type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'ekg')} />Add EKG</label>}
+                            {!multiModalData.labResults && <label className="flex items-center justify-center p-2 h-10 border-2 border-slate-700 rounded-lg transition-colors hover:border-cyan-700 cursor-pointer text-sm font-medium"><input type="file" accept=".pdf,.txt,.md,text/plain" className="hidden" onChange={e => handleFileChange(e, 'labResults')} />Add Lab Results</label>}
                         </div>
-                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {multiModalData.chestXray && <div className="p-2 bg-slate-800/50 rounded-lg"><h4 className="font-bold text-slate-300">Chest X-Ray</h4><img src={multiModalData.chestXray.image} alt="Chest X-Ray" className="mt-2 rounded border border-slate-600 h-24 w-24 object-cover" /><p className="text-xs mt-1 text-slate-400">{multiModalData.chestXray.findings}</p></div>}
-                            {multiModalData.ekg && <div className="p-2 bg-slate-800/50 rounded-lg"><h4 className="font-bold text-slate-300">EKG</h4><img src={multiModalData.ekg.image} alt="EKG" className="mt-2 rounded border border-slate-600 h-24 w-full object-cover" /><p className="text-xs mt-1 text-slate-400">{multiModalData.ekg.findings}</p></div>}
-                            {multiModalData.labResults && <div className="p-2 bg-slate-800/50 rounded-lg md:col-span-2"><h4 className="font-bold text-slate-300">{multiModalData.labResults.panel}</h4><ul className="text-xs mt-1 text-slate-400 columns-2">{multiModalData.labResults.results.map(r => <li key={r.test}><strong>{r.test}:</strong> {r.value}</li>)}</ul></div>}
-                        </div>
+                        
+                        {(multiModalData.chestXray || multiModalData.ekg || multiModalData.labResults) && (
+                            <div className="mt-4 pt-4 border-t border-slate-700/80 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {multiModalData.chestXray && (
+                                    <div className="p-3 bg-slate-800/50 rounded-lg relative space-y-2">
+                                        <button onClick={() => handleRemoveModality('chestXray')} className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-500 transition-colors">X</button>
+                                        <h4 className="font-bold text-slate-300">Chest X-Ray</h4>
+                                        <img src={multiModalData.chestXray.image} alt="Chest X-Ray Preview" className="rounded border border-slate-600 h-24 w-24 object-cover" />
+                                        <textarea value={multiModalData.chestXray.findings} onChange={e => handleFindingsChange('chestXray', e.target.value)} placeholder="Paste or enter findings here..." className="w-full h-20 text-xs p-2 bg-slate-900/70 border border-slate-700 rounded-md focus:ring-1 focus:ring-cyan-500 focus:outline-none text-slate-300 resize-none" />
+                                    </div>
+                                )}
+                                {multiModalData.ekg && (
+                                    <div className="p-3 bg-slate-800/50 rounded-lg relative space-y-2">
+                                        <button onClick={() => handleRemoveModality('ekg')} className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-500 transition-colors">X</button>
+                                        <h4 className="font-bold text-slate-300">EKG</h4>
+                                        <img src={multiModalData.ekg.image} alt="EKG Preview" className="rounded border border-slate-600 h-24 w-full object-contain bg-white" />
+                                        <textarea value={multiModalData.ekg.findings} onChange={e => handleFindingsChange('ekg', e.target.value)} placeholder="Paste or enter findings here..." className="w-full h-20 text-xs p-2 bg-slate-900/70 border border-slate-700 rounded-md focus:ring-1 focus:ring-cyan-500 focus:outline-none text-slate-300 resize-none" />
+                                    </div>
+                                )}
+                                {multiModalData.labResults && (
+                                    <div className="p-3 bg-slate-800/50 rounded-lg relative space-y-2 md:col-span-2">
+                                        <button onClick={() => handleRemoveModality('labResults')} className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-500 transition-colors">X</button>
+                                        <h4 className="font-bold text-slate-300">Lab Results</h4>
+                                        <p className="text-sm p-2 bg-slate-900/70 rounded-md border border-slate-700 text-slate-300 truncate">{multiModalData.labResults.fileName}</p>
+                                        <textarea value={multiModalData.labResults.findings} onChange={e => handleFindingsChange('labResults', e.target.value)} placeholder="Paste or enter lab results here..." className="w-full h-24 text-xs p-2 bg-slate-900/70 border border-slate-700 rounded-md focus:ring-1 focus:ring-cyan-500 focus:outline-none text-slate-300 resize-none" />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </Card>
                  </div>
               </div>

@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { NexusAnalysis, MultiModalData } from '../types';
 import { NEXUS_EXAMPLE } from '../data/promptExamples';
@@ -430,7 +431,7 @@ const buildMultiModalPrompt = (multiModalData: MultiModalData): string => {
 
 export const runNexusAnalysis = async (caseSummary: string, multiModalData: MultiModalData): Promise<NexusAnalysis> => {
     if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not set");
+        throw new Error("NEXUS Core analysis key is not configured.");
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -507,7 +508,7 @@ export const runNexusAnalysis = async (caseSummary: string, multiModalData: Mult
 
         return parsedJson as NexusAnalysis;
     } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        throw new Error("Failed to get analysis from Gemini API.");
+        console.error("Error during NEXUS analysis service call:", error);
+        throw new Error("Failed to get analysis from the NEXUS analysis service.");
     }
 };

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEXUS: Clinical Diagnostic Reasoning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+      #background-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        overflow: hidden;
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.8s ease-in-out forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-pulse-glow {
+        animation: pulseGlow 2.5s infinite ease-in-out;
+      }
+      @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 15px rgba(34, 211, 238, 0.3), 0 0 5px rgba(34, 211, 238, 0.2); }
+        50% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.6), 0 0 10px rgba(34, 211, 238, 0.4); }
+      }
+      @keyframes flash-green {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(74, 222, 128, 0.15); }
+      }
+      @keyframes flash-red {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(248, 113, 113, 0.15); }
+      }
+      .animate-flash-green {
+        animation: fadeIn 0.8s ease-in-out, flash-green 1.5s ease-in-out;
+      }
+      .animate-flash-red {
+        animation: fadeIn 0.8s ease-in-out, flash-red 1.5s ease-in-out;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-900 text-slate-300">
+    <div id="background-animation"></div>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

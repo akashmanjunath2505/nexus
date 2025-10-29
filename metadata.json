@@ -1,0 +1,5 @@
+{
+  "name": "NEXUS: Neural Evidence eXtraction & Uncertainty Synthesis",
+  "description": "The world's most advanced clinical diagnostic reasoning framework. This application provides an interactive demonstration of the NEXUS system, allowing users to simulate a clinical case and visualize the diagnostic process through its eight distinct reasoning strata.",
+  "requestFramePermissions": []
+}
